@@ -84,55 +84,65 @@ Main:
 ; - move forward ~1 m at a slow speed,
 ; - move back towards (0,0) at a fast speed.
 
-
 To12:
 	LOADI  270    ; turn right 90
 	STORE  DTheta ; Desired angle 90
+	CALL   WAIT1
     CALL   Go305
 	CALL   CALI2
 	JUMP   To23
 
 To23:
-    LOAD   270 
+    LOADI   270 
     STORE  Dtheta
+    CALL   WAIT1
+     
     CALL   GO220
-    LOAD   0
+    LOADI   0
     STORE  Dtheta
+    CALL   WAIT1
     CALL   CALI3
     JUMP   To32
 
 To32:
-    LOAD   90
+    LOADI   90
     STORE  Dtheta
+    CALL   WAIT1
+    
+	  
     CALL   Go220
-    LOAD   0
+    LOADI   0
     STORE  Dtheta
+    CALL   WAIT1
     CALL   CALI2
     JUMP   To21
 
 To21:
-	LOAD   180
+	LOADI   180
 	STORE  Dtheta
+	CALL   WAIT1
+	
     CALL   Go305
-    LOAD   90
+    LOADI   90
     STORE  Dtheta
+    CALL   WAIT1
     CALL   CALI1
     Jump   To12
 
-Go305:
-	LOAD   FMid        ; Defined below as 350.
-	STORE  DVel        ; Desired forward velocity
+Go305:  
+	LOAD   FMid        
+	STORE  DVel    
 	In     XPOS
-	OUT    LCD
 	SUB    CM305
+	OUT    LCD
 	JNEG   Go305
 	LOADI  0
 	STORE  Dvel
 	RETURN
 
 Go220:
-	LOAD   FMid        ; Defined below as 350.
-	STORE  DVel        ; Desired forward velocity
+    LOAD   FMid        
+	STORE  DVel
 	In     XPOS
 	OUT    LCD
 	SUB    CM220
