@@ -76,8 +76,6 @@ Main:
 	; If you want to take manual control of the robot,
 	; execute CLI &B0010 to disable the timer interrupt.
 	
-	;CLI		&B0010
-	
 
 ; As a quick demo of the movement control, the robot is 
 ; directed to
@@ -86,33 +84,76 @@ Main:
 ; - move forward ~1 m at a slow speed,
 ; - move back towards (0,0) at a fast speed.
 
-		LOADI 	&B0010000
-		OUT		SONAREN
-		OUT     TIMER
-LOOP:   IN		DIST4
-		ADDI	-610
-		JNEG	DETECT
-		IN      TIMER
-        ADDI    -5
-        JNEG	LOOP
-		LOAD	FMid
-		STORE   DVel
-		OUT		TIMER
-		JUMP	LOOP
-DETECT:	LOADI	0
-		STORE	DVel
-		LOADI   -90
-		STORE	DTheta
-		LOADI	&H120
-		OUT		BEEP
 
-		
-		
+To12:
+	LOADI  270    ; turn right 90
+	STORE  DTheta ; Desired angle 90
+    CALL   Go305
+	CALL   CALI2
+	JUMP   To23
 
-	;LOADI  0
-	;STORE  DTheta      ; Desired angle 0
-	;LOAD   FMid        ; Defined below as 350.
-	;STORE  DVel        ; Desired forward velocity
+To23:
+    LOAD   270 
+    STORE  Dtheta
+    CALL   GO220
+    LOAD   0
+    STORE  Dtheta
+    CALL   CALI3
+    JUMP   To32
+
+To32:
+    LOAD   90
+    STORE  Dtheta
+    CALL   Go220
+    LOAD   0
+    STORE  Dtheta
+    CALL   CALI2
+    JUMP   To21
+
+To21:
+	LOAD   180
+	STORE  Dtheta
+    CALL   Go305
+    LOAD   90
+    STORE  Dtheta
+    CALL   CALI1
+    Jump   To12
+
+Go305:
+	LOAD   FMid        ; Defined below as 350.
+	STORE  DVel        ; Desired forward velocity
+	In     XPOS
+	OUT    LCD
+	SUB    CM305
+	JNEG   Go305
+	LOADI  0
+	STORE  Dvel
+	RETURN
+
+Go220:
+	LOAD   FMid        ; Defined below as 350.
+	STORE  DVel        ; Desired forward velocity
+	In     XPOS
+	OUT    LCD
+	SUB    CM220
+	JNEG   Go220
+	LOADI  0
+	STORE  Dvel
+	RETURN
+	
+CALI1:
+    OUT  RESETPOS 
+    RETURN
+
+CALI2:
+    OUT  RESETPOS 
+    RETURN
+
+CALI3:
+    OUT  RESETPOS 
+    RETURN
+	
+	
 	; The robot should automatically start moving,
 	; trying to match these desired parameters, because
 	; the movement API is active.
@@ -284,7 +325,7 @@ GetThetaErr:
 	; ((error + 180) % 360 ) - 180
 	IN     THETA
 	SUB    DTheta      ; actual - desired angle
-	CALL   Neg         ; desired - actual angle
+	CALL   Neg         ; desired - actual angle 
 	ADDI   180
 	CALL   Mod360
 	ADDI   -180
@@ -796,6 +837,8 @@ LowNibl:  DW &HF       ; 0000 0000 0000 1111
 ; some useful movement values
 OneMeter: DW 961       ; ~1m in 1.04mm units
 HalfMeter: DW 481      ; ~0.5m in 1.04mm units
+CM305:    DW 2931      ; ~305cm in 1.04mm units
+CM220:    DW 2114      ; ~220cm in 1.04mm units
 TwoFeet:  DW 586       ; ~2ft in 1.04mm units
 OneFoot:  DW 293       ; ~2ft in 1.04mm units
 Deg90:    DW 90        ; 90 degrees in odometer units
