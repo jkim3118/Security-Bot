@@ -140,17 +140,20 @@ Go220:
 	LOADI  0
 	STORE  Dvel
 	RETURN
-	
+;**** CALIBRATION FUNCTIONS	
 CALI1:
-    OUT  RESETPOS 
+	IN DIST1        ; read sensor 1 value
+	
+	STORE 
+    OUT  RESETPOS       ; resets odemetry coordiantes back to 0,0 
     RETURN
 
 CALI2:
-    OUT  RESETPOS 
+    OUT  RESETPOS        ; resets odemetry coordiantes back to 0,0 
     RETURN
 
 CALI3:
-    OUT  RESETPOS 
+    OUT  RESETPOS       ; resets odemetry coordiantes back to 0,0  
     RETURN
 	
 	
@@ -855,6 +858,14 @@ RFast:    DW -500
 MinBatt:  DW 140       ; 14.0V - minimum safe battery voltage
 I2CWCmd:  DW &H1190    ; write one i2c byte, read one byte, addr 0x90
 I2CRCmd:  DW &H0190    ; write nothing, read one byte, addr 0x90
+
+;CALIBRATION STORAGE VARIABLES
+xobserved: DW 0
+xexpected: DW 0
+yobserved: DW 0
+yexpected: DW 0
+xcorrect: DW 0
+ycorrect:: DW 0
 
 ;***************************************************************
 ;* IO address space map
