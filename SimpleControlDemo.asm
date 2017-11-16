@@ -163,7 +163,11 @@ CALI3:
     OUT  RESETPOS 
     RETURN
 	
-	
+SoundAlarm:
+    LOADI  &H840
+    OUT    BEEP      
+    RETURN
+
 	; The robot should automatically start moving,
 	; trying to match these desired parameters, because
 	; the movement API is active.
