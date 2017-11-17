@@ -75,7 +75,7 @@ Main:
 	; code in that ISR will attempt to control the robot.
 	; If you want to take manual control of the robot,
 	; execute CLI &B0010 to disable the timer interrupt.
-	
+
 
 ; As a quick demo of the movement control, the robot is 
 ; directed to
@@ -85,51 +85,114 @@ Main:
 ; - move back towards (0,0) at a fast speed.
 
 To12:
-	LOADI  270    ; turn right 90
+	LOADI  250    ; turn right 90
 	STORE  DTheta ; Desired angle 90
+	CALL   WAIT1  
 	CALL   WAIT1
+	CALL   FixThetaErr
+	CALL   WAIT1
+	
+	
+	OUT    RESETPOS
+	LOADI  0
+	STORE  DTheta
+	
     CALL   Go305
+    
+    LOADI  20
+    STORE  DTheta
+    CALL   WAIT1
+    CALL   WAIT1
+    CALL   FixThetaErr
+	CALL   WAIT1
+    OUT    RESETPOS
+    LOADI  0
+    STORE  Dtheta
+    
 	CALL   CALI2
 	JUMP   To23
 
 To23:
-    LOADI   270 
-    STORE  Dtheta
+    LOADI  287 
+    STORE  DTheta
     CALL   WAIT1
-     
-    CALL   GO220
-    LOADI   0
-    STORE  Dtheta
     CALL   WAIT1
+    CALL   FixThetaErr
+	CALL   WAIT1
+    OUT    RESETPOS
+    LOADI  0
+    STORE  DTheta
+   
+    CALL   Go220
+    
+    LOADI  73
+    STORE  DTheta
+    CALL   WAIT1
+    CALL   WAIT1
+    CALL   FixThetaErr
+	CALL   WAIT1
+    OUT    RESETPOS
+    LOADI  0
+    STORE  Dtheta
+    
     CALL   CALI3
     JUMP   To32
 
 To32:
-    LOADI   90
-    STORE  Dtheta
+    LOADI  107 
+    STORE  DTheta
     CALL   WAIT1
+    CALL   WAIT1
+    CALL   FixThetaErr
+	CALL   WAIT1
+    OUT    RESETPOS
+    LOADI  0
+    STORE  DTheta
     
 	  
     CALL   Go220
-    LOADI   0
-    STORE  Dtheta
+    
+    LOADI  253
+    STORE  DTheta
     CALL   WAIT1
+    CALL   WAIT1
+    CALL   FixThetaErr
+	CALL   WAIT1
+    OUT    RESETPOS
+    LOADI  0
+    STORE  DTheta
+    
     CALL   CALI2
     JUMP   To21
 
 To21:
-	LOADI   180
-	STORE  Dtheta
+	LOADI  160
+    STORE  DTheta
+    CALL   WAIT1
+    CALL   WAIT1
+    CALL   FixThetaErr
 	CALL   WAIT1
+    OUT    RESETPOS
+    LOADI  0
+    STORE  DTheta
 	
     CALL   Go305
-    LOADI   90
-    STORE  Dtheta
+    
+    LOADI  290
+    STORE  DTheta
     CALL   WAIT1
+    CALL   WAIT1
+    CALL   FixThetaErr
+	CALL   WAIT1
+    OUT    RESETPOS
+    LOADI  0
+    STORE  DTheta
+    
     CALL   CALI1
     Jump   To12
 
-Go305:  
+Go305: 
+    
 	LOAD   FMid        
 	STORE  DVel    
 	In     XPOS
@@ -137,20 +200,23 @@ Go305:
 	OUT    LCD
 	JNEG   Go305
 	LOADI  0
-	STORE  Dvel
+	STORE  DVel
 	RETURN
 
 Go220:
+    
     LOAD   FMid        
 	STORE  DVel
 	In     XPOS
-	OUT    LCD
 	SUB    CM220
+	OUT    LCD
 	JNEG   Go220
 	LOADI  0
-	STORE  Dvel
+	STORE  DVel
 	RETURN
-	
+
+    
+
 CALI1:
     OUT  RESETPOS 
     RETURN
@@ -164,79 +230,6 @@ CALI3:
     RETURN
 	
 	
-	; The robot should automatically start moving,
-	; trying to match these desired parameters, because
-	; the movement API is active.
-	
-Test1:  ; P.S. "Test1" is a terrible, non-descriptive label
-	IN     XPOS        ; X position from odometry
-	OUT    LCD         ; Display X position for debugging
-	SUB    OneMeter    ; Defined below as the robot units for 1 m
-	JNEG   Test1       ; Not there yet, keep checking
-
-	; turn left 90 degrees
-	LOADI  0
-	STORE  DVel
-	LOADI  90
-	STORE  DTheta
-	; Note that we waited until *at* 1 m to do anything, and we
-	; didn't let the robot stop moving forward before telling it to turn,
-	; so it will likely move well past 1 m.  This code isn't
-	; meant to be precise.
-Test2:
-	CALL   GetThetaErr ; get the heading error
-	CALL   Abs         ; absolute value subroutine
-	OUT    LCD         ; Display |angle error| for debugging
-	ADDI   -5          ; check if within 5 degrees of target angle
-	JPOS   Test2       ; if not, keep testing
-	; the robot is now within 5 degrees of 90
-	
-	LOAD   FSlow       ; defined below as 100
-	STORE  DVel
-
-Test3: ; Did I mention that "Test3" is a terrible label?
-	IN     YPOS        ; get the Y position from odometry
-	SUB    OneMeter
-	OUT    LCD         ; Display distance error for debugging
-	JNEG   Test3       ; if not there, keep testing
-	; the robot is now past 1 m in Y.
-
-	LOAD   FFast       ; defined below as 500
-	STORE  DVel
-
-GoTo00: ; slightly better label than "test"
-; This routine uses the provided ATAN2 subroutine to calculate
-; the angle needed to reach (0,0).  The origin is a degenerative
-; case, but you can use a little more math to use ATAN2 to point to
-; any coordinate.
-	IN     XPOS        ; get the X position from odometry
-	CALL   Neg         ; negate
-	STORE  AtanX
-	IN     YPOS        ; get the X position from odometry
-	CALL   Neg         ; negate
-	STORE  AtanY
-	CALL   Atan2       ; Gets the angle from (0,0) to (AtanX,AtanY)
-	STORE  DTheta
-	OUT    SSEG1       ; Display angle for debugging
-	
-	; The following bit of code uses another provided subroutine,
-	; L2Estimate, the calculate the distance to (0,0).  Once again,
-	; the origin is a degenerative case, but adding a bit more math can
-	; extend this to any coordinate.
-	IN     XPOS
-	STORE  L2X
-	IN     YPOS
-	STORE  L2Y
-	CALL   L2Estimate
-	OUT    SSEG2       ; Display distance for debugging
-	SUB    OneFoot
-	JPOS   GoTo00      ; If >1 ft from destination, continue
-	; robot is now near the origin
-
-	; done
-	LOADI  0
-	STORE  DVel
-	JUMP   Die
 
 
 
@@ -325,11 +318,10 @@ CMADone:
 	OUT    RVELCMD
 
 	RETURN
-	CMAErr: DW 0       ; holds angle error velocity
+	CMAErr:  DW 0      ; holds angle error velocity
 	CMAL:    DW 0      ; holds temp left velocity
 	CMAR:    DW 0      ; holds temp right velocity
-
-; Returns the current angular error wrapped to +/-180
+	
 GetThetaErr:
 	; convenient way to get angle error in +/-180 range is
 	; ((error + 180) % 360 ) - 180
@@ -339,6 +331,19 @@ GetThetaErr:
 	ADDI   180
 	CALL   Mod360
 	ADDI   -180
+    RETURN
+; Returns the current angular error wrapped to +/-180
+FixThetaErr:
+	; convenient way to get angle error in +/-180 range is
+	; ((error + 180) % 360 ) - 180
+	IN     THETA
+	SUB    DTheta      ; actual - desired angle
+	CALL   Neg         ; desired - actual angle 
+	ADDI   180
+	CALL   Mod360
+	ADDI   -180
+	ADD    THETA
+	STORE  DTHETA
 	RETURN
 
 ; caps a value to +/-MaxVal
@@ -813,6 +818,7 @@ I2CError:
 ;***************************************************************
 Temp:     DW 0 ; "Temp" is not a great name, but can be useful
 
+
 ;***************************************************************
 ;* Constants
 ;* (though there is nothing stopping you from writing to these)
@@ -847,8 +853,8 @@ LowNibl:  DW &HF       ; 0000 0000 0000 1111
 ; some useful movement values
 OneMeter: DW 961       ; ~1m in 1.04mm units
 HalfMeter: DW 481      ; ~0.5m in 1.04mm units
-CM305:    DW 2931      ; ~305cm in 1.04mm units
-CM220:    DW 2114      ; ~220cm in 1.04mm units
+CM305:    DW 2057      ; ~305cm in 1.04mm units
+CM220:    DW 1912      ; ~220cm in 1.04mm units
 TwoFeet:  DW 586       ; ~2ft in 1.04mm units
 OneFoot:  DW 293       ; ~2ft in 1.04mm units
 Deg90:    DW 90        ; 90 degrees in odometer units
