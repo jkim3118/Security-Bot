@@ -69,8 +69,7 @@ Main:
 	
 	; configure timer interrupts to enable the movement control code
 	LOADI  10          ; fire at 10 Hz (10 ms * 10).
-	OUT    CTIMER      ; turn on timer peripheral
-	SEI    &B0010      ; enable interrupts from source 2 (timer)
+	OUT    CTIMER      ; turn on timer periph	SEI    &B0010      ; enable interrupts from source 2 (timer)
 	; at this point, timer interrupts will be firing at 10Hz, and
 	; code in that ISR will attempt to control the robot.
 	; If you want to take manual control of the robot,
@@ -84,35 +83,35 @@ Main:
 ; - move forward ~1 m at a slow speed,
 ; - move back towards (0,0) at a fast speed.
 
-To12:
-	LOADI  250    ; turn right 90
-	STORE  DTheta ; Desired angle 90
-	CALL   WAIT1  
+To12:			;This part makes the robot turn to the direction of path 12, complete path12, and turn to calibration point2
+	LOADI  250    	; Turn to 250
+	STORE  DTheta 
+	CALL   WAIT1  	; Wait 2 seconds
 	CALL   WAIT1
-	CALL   FixThetaErr
-	CALL   WAIT1
+	CALL   FixThetaErr ; Fix Theta Error
+	CALL   WAIT1 	; Wait 1 second
 	
 	
-	OUT    RESETPOS
+	OUT    RESETPOS ; Reset position values at turned angle 
 	LOADI  0
 	STORE  DTheta
 	
-    CALL   Go305
+    CALL   Go305 	; Go and complete path 1
     
-    LOADI  20
-    STORE  DTheta
+    LOADI  20 		;Turn to angle 20
+    STORE  DTheta 
+    CALL   WAIT1 	;Wait 2 seconds
     CALL   WAIT1
-    CALL   WAIT1
-    CALL   FixThetaErr
-	CALL   WAIT1
-    OUT    RESETPOS
-    LOADI  0
-    STORE  Dtheta
+    CALL   FixThetaErr 	;Fix Theta Error
+    CALL   WAIT1 	; Wait 1 second
+    OUT    RESETPOS 	; Reset position values at turned angle
+    LOADI  0 		;Turn to angle 0
+    STORE  Dtheta 	
     
-	CALL   CALI2
-	JUMP   To23
+    CALL   CALI2	;Call calibration function
+    JUMP   To23		; 
 
-To23:
+To23:			;This part makes the robot turn to the direction of path 23, complete path23, and turn to calibration angle
     LOADI  287 
     STORE  DTheta
     CALL   WAIT1
@@ -138,7 +137,7 @@ To23:
     CALL   CALI3
     JUMP   To32
 
-To32:
+To32:			;This part makes the robot turn to the direction of path 32, complete path32, and turn to calibration angle
     LOADI  107 
     STORE  DTheta
     CALL   WAIT1
@@ -165,7 +164,7 @@ To32:
     CALL   CALI2
     JUMP   To21
 
-To21:
+To21:			;This part makes the robot turn to the direction of path 21, complete path21, and turn to calibration angle
 	LOADI  160
     STORE  DTheta
     CALL   WAIT1
@@ -174,7 +173,7 @@ To21:
 	CALL   WAIT1
     OUT    RESETPOS
     LOADI  0
-    STORE  DTheta
+     STORE  DTheta
 	
     CALL   Go305
     
@@ -191,7 +190,7 @@ To21:
     CALL   CALI1
     Jump   To12
 
-Go305: 
+Go305:  			;Function to make the robot move foward for the distance of path 12/21
     
 	LOAD   FMid        
 	STORE  DVel    
@@ -203,7 +202,7 @@ Go305:
 	STORE  DVel
 	RETURN
 
-Go220:
+Go220:				Function to make the robot move foward for the distance of path 23/32
     
     LOAD   FMid        
 	STORE  DVel
